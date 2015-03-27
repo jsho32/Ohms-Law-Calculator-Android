@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:gravity="center"
+              android:background="#AA000000">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/alert_description"
+            android:gravity="center"
+            android:text="@string/alert_description"
+            android:textColor="#ffffff"
+            android:textSize="@dimen/default_text"
+            android:padding="@dimen/activity_vertical_margin"/>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/alert_close"
+            android:text="@string/alert_close"
+            android:padding="@dimen/activity_vertical_margin"
+            android:layout_margin="@dimen/activity_vertical_margin"/>
+
+</LinearLayout>
