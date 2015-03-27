@@ -17,7 +17,7 @@ android {
     buildToolsVersion "21.1.1"
 
     defaultConfig {
-        applicationId "com.shoresdevelopment.galacticbountyhunter.game"
+        applicationId "com.shoresdevelopment.ohmslawcalculator.app"
         minSdkVersion 7
         targetSdkVersion 21
         versionCode 1
