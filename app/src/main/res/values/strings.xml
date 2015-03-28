@@ -2,11 +2,12 @@
 <resources>
 
     <string name="app_name">Ohms Law Calculator</string>
-    <string name="developer_button">More from Developer</string>
+    <string name="developer_button">See More!</string>
+    <string name="donate_button">Donate!</string>
     <string name="volts">Volts (V): </string>
     <string name="amps">Amps (I): </string>
     <string name="ohms">Ohms (R): </string>
-    <string name="watts">Watts (W): </string>
+    <string name="watts">Watts (P): </string>
     <string name="calculate">Calculate</string>
     <string name="help">Help!</string>
     <string name="reset">Reset</string>
@@ -17,5 +18,8 @@
     <string name="alert_description">Please enter values in exactly two fields.</string>
     <string name="help_title">How to</string>
     <string name="help_description">Enter values in exactly two fields.\nThen press calculate.\nThe remaining fields will be calculated and filled in!</string>
+    <string name="thanks_title">Thank You!</string>
+    <string name="thanks_description">Your support is greatly appreciated!</string>
+    <string name="thanks_close">Close</string>
 
 </resources>
