@@ -33,4 +33,4 @@ proguard/
 manifest-merger-release-report.txt
 
 # License Key
-src/main/java/com/shoresdevelopment/ohmslawcalculator/app/LicenseKey.java
+LicenseKey.java
