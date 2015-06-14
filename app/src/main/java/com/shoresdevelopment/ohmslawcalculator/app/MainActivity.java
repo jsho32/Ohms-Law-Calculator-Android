@@ -2,21 +2,24 @@ package com.shoresdevelopment.ohmslawcalculator.app;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.app.PendingIntent;
+import android.content.*;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.*;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.*;
+import com.android.vending.billing.IInAppBillingService;
 import com.shoresdevelopment.util.IabHelper;
 import com.shoresdevelopment.util.IabResult;
 import com.shoresdevelopment.util.Inventory;
 import com.shoresdevelopment.util.Purchase;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,36 +29,10 @@ public class MainActivity extends Activity {
     private EditText volts, amps, ohms, watts;
     private List<EditText> editTexts;
     private Dialog dialog;
+    private IInAppBillingService mService;
+    private ServiceConnection mServiceConn;
+    private LicenseKey licenseKey;
     private static final String TAG = "com.shodev.ohmslawcalc";
-    IabHelper mHelper;
-    static final String ITEM_SKU = "com.shoresdevelopment.donate";
-
-    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
-        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-            if (result.isFailure()) {
-                // Handle error
-                return;
-            } else if (purchase.getSku().equals(ITEM_SKU)) {
-                consumeItem();
-            }
-
-        }
-    };
-
-    IabHelper.OnConsumeFinishedListener mConsumeFinishedListener = new IabHelper.OnConsumeFinishedListener() {
-        public void onConsumeFinished(Purchase purchase, IabResult result) {
-
-            if (result.isSuccess()) {
-                dialog.setTitle(getResources().getText(R.string.thanks_title));
-                TextView description = (TextView) dialog.findViewById(R.id.alert_description);
-                description.setText(getResources().getText(R.string.thanks_description));
-                Button close = (Button) dialog.findViewById(R.id.alert_close);
-                close.setText(getResources().getText(R.string.thanks_close));
-                dialog.show();
-            }
-
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,30 +43,27 @@ public class MainActivity extends Activity {
         initializeEditTexts();
         initializeButtons();
 
-        LicenseKey licenseKey = new LicenseKey();
-        String base64EncodedPublicKey = licenseKey.getLicenseKey();
-
-        mHelper = new IabHelper(this, base64EncodedPublicKey);
-
-        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-            @Override
-            public void onIabSetupFinished(IabResult result) {
-
-                if (!result.isSuccess()) {
-                    Log.d(TAG, "In-app Billing setup failed: " + result);
-                } else {
-                    Log.d(TAG, "In-app Billing is set up OK");
-                }
-            }
-        });
+        licenseKey = new LicenseKey();
 
         AdView adView = (AdView) this.findViewById(R.id.adView);
-
-        // Request for Ads
         AdRequest adRequest = new AdRequest.Builder().build();
-
-        // Load ads into Banner Ads
         adView.loadAd(adRequest);
+
+        mServiceConn = new ServiceConnection() {
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                mService = null;
+            }
+
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                mService = IInAppBillingService.Stub.asInterface(service);
+            }
+        };
+
+        Intent serviceIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
+        serviceIntent.setPackage("com.android.vending");
+        bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -114,18 +88,45 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    /** When activity is destroyed */
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mHelper != null) mHelper.dispose();
-        mHelper = null;
+        if (mService != null) {
+            unbindService(mServiceConn);
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1001) {
+            int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
+            String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
+            String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
 
-        if (!mHelper.handleActivityResult(requestCode, resultCode, data)) {
-            super.onActivityResult(requestCode, resultCode, data);
+            if (resultCode == Activity.RESULT_OK) {
+                try {
+                    JSONObject jo = new JSONObject(purchaseData);
+                    String sku = jo.getString("productId");
+                    String token = jo.getString("purchaseToken");
+                    dialog.setTitle(getResources().getText(R.string.thanks_title));
+                    TextView description = (TextView) dialog.findViewById(R.id.alert_description);
+                    description.setText(getResources().getText(R.string.thanks_description));
+                    Button close = (Button) dialog.findViewById(R.id.alert_close);
+                    close.setText(getResources().getText(R.string.thanks_close));
+                    dialog.show();
+                    findViewById(R.id.donate_container).setVisibility(View.GONE);
+                    try {
+                        mService.consumePurchase(3, MainActivity.this.getPackageName(), token);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+                catch (JSONException e) {
+                    Toast.makeText(this, "Failed to parse purchase data.", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -221,8 +222,15 @@ public class MainActivity extends Activity {
         donate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHelper.launchPurchaseFlow(MainActivity.this, ITEM_SKU, 10001,
-                        mPurchaseFinishedListener, "mypurchasetoken");
+                findViewById(R.id.donate_container).setVisibility(View.VISIBLE);
+                Button close = (Button) findViewById(R.id.close_donation);
+                close.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        findViewById(R.id.donate_container).setVisibility(View.GONE);
+                    }
+                });
+                populateListView();
             }
         });
     }
@@ -304,18 +312,93 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void consumeItem() {
-        mHelper.queryInventoryAsync(mReceivedInventoryListener);
+    /** Populates the donate listview. */
+    public void populateListView() {
+        ListView listView = (ListView) findViewById(R.id.donateList);
+
+        List<DonateListItem> listItems = getListItems();
+        DonateListItem listContents[] = new DonateListItem[listItems.size()];
+
+        listItems.toArray(listContents);
+        listView.setAdapter(getListAdapter(listContents));
     }
 
-    IabHelper.QueryInventoryFinishedListener mReceivedInventoryListener  = new IabHelper.QueryInventoryFinishedListener() {
-        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+    /** Creates the list of store list items */
+    private List<DonateListItem> getListItems() {
+        List<DonateListItem> listItems = new ArrayList<>();
+        ArrayList<String> skuList = new ArrayList<>();
+        skuList.add(licenseKey.getSmallDonation());
+        skuList.add(licenseKey.getMediumDonation());
+        skuList.add(licenseKey.getLargeDonation());
+        //skuList.add("android.test.purchased");
+        Bundle querySkus = new Bundle();
+        querySkus.putStringArrayList("ITEM_ID_LIST", skuList);
 
-            if (result.isFailure()) {
-                // Handle failure
-            } else {
-                mHelper.consumeAsync(inventory.getPurchase(ITEM_SKU),  mConsumeFinishedListener);
+        try {
+            Bundle skuDetails = mService.getSkuDetails(3, MainActivity.this.getPackageName(), "inapp", querySkus);
+
+            int response = skuDetails.getInt("RESPONSE_CODE");
+            if (response == 0) {
+                ArrayList<String> responseList = skuDetails.getStringArrayList("DETAILS_LIST");
+
+                for (String thisResponse : responseList) {
+                    JSONObject object = new JSONObject(thisResponse);
+                    String sku = object.getString("productId");
+                    String price = object.getString("price");
+                    String title = object.getString("title").replace("(Ohms Law Calculator)", "");
+                    String description = object.getString("description");
+
+                    DonateListItem item = new DonateListItem(title, description, sku, price);
+                    listItems.add(item);
+
+                }
             }
+        } catch (RemoteException | JSONException e) {
+            e.printStackTrace();
         }
-    };
+
+        return listItems;
+
+    }
+
+    /** Returns adapter for store list view */
+    private ArrayAdapter<DonateListItem> getListAdapter(final DonateListItem item[]) {
+
+        return new ArrayAdapter<DonateListItem>(MainActivity.this, R.layout.donate_list_item, item) {
+
+            @Override
+            public View getView(final int position, View convertView, ViewGroup parent) {
+                if (convertView == null) {
+                    LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    convertView = inflater.inflate(R.layout.donate_list_item, null);
+                }
+
+                final TextView description = (TextView) convertView.findViewById(R.id.description);
+                description.setText(item[position].getDescription());
+                final TextView title = (TextView) convertView.findViewById(R.id.title);
+                title.setText(item[position].getTitle());
+
+                Button purchase = (Button) convertView.findViewById(R.id.purchase);
+                purchase.setText(item[position].getPrice());
+                purchase.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        try {
+                            Bundle buyIntentBundle = mService.getBuyIntent(3, MainActivity.this.getPackageName(),
+                                    item[position].getITEM_SKU(), "inapp", "");
+
+                            PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
+                            MainActivity.this.startIntentSenderForResult(pendingIntent.getIntentSender(),
+                                    1001, new Intent(), Integer.valueOf(0), Integer.valueOf(0),
+                                    Integer.valueOf(0));
+                        } catch (RemoteException | IntentSender.SendIntentException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                return convertView;
+            }
+        };
+    }
 }
