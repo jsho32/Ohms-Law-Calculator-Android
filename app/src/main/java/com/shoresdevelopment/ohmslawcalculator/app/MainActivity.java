@@ -15,6 +15,8 @@ import com.shoresdevelopment.util.IabHelper;
 import com.shoresdevelopment.util.IabResult;
 import com.shoresdevelopment.util.Inventory;
 import com.shoresdevelopment.util.Purchase;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +83,13 @@ public class MainActivity extends Activity {
             }
         });
 
+        AdView adView = (AdView) this.findViewById(R.id.adView);
+
+        // Request for Ads
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+        // Load ads into Banner Ads
+        adView.loadAd(adRequest);
     }
 
     @Override
