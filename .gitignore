@@ -32,5 +32,8 @@ proguard/
 # Release report
 manifest-merger-release-report.txt
 
+# Debug report
+manifest-merger-debug-report.txt
+
 # License Key
 LicenseKey.java
