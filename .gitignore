@@ -37,3 +37,6 @@ manifest-merger-debug-report.txt
 
 # License Key
 LicenseKey.java
+
+.DS_Store
+Ohms-Law-Calculator.iml
