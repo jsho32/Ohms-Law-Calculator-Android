@@ -3,7 +3,7 @@
 
     <string name="app_name">Ohms Law Calculator</string>
     <string name="developer_button">See More!</string>
-    <string name="donate_button">Donate!</string>
+    <string name="share_button">Share!</string>
     <string name="volts">Volts (V): </string>
     <string name="amps">Amps (I): </string>
     <string name="ohms">Ohms (R): </string>
