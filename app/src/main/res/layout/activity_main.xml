@@ -54,7 +54,7 @@
                 android:textColor="#ffffff" />
 
         <Button
-                android:text="@string/donate_button"
+                android:text="@string/share_button"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/donate"
