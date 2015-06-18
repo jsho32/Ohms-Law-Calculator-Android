@@ -113,7 +113,7 @@ public class MainActivity extends Activity {
         Button reset = (Button) findViewById(R.id.reset);
         Button help = (Button) findViewById(R.id.help);
         Button developer = (Button) findViewById(R.id.developer);
-        Button share = (Button) findViewById(R.id.donate);
+        Button share = (Button) findViewById(R.id.share);
 
         calculate.setOnClickListener(new View.OnClickListener() {
             @Override
