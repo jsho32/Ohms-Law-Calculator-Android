@@ -18,9 +18,6 @@
     <string name="alert_title">Invalid Entries!</string>
     <string name="alert_description">Please enter values in exactly two fields.</string>
     <string name="help_title">How to</string>
-    <string name="help_description">Enter values in exactly two fields.\nThen press calculate.\nThe remaining fields will be calculated and filled in!</string>
-    <string name="thanks_title">Thank You!</string>
-    <string name="thanks_description">Your support is greatly appreciated!</string>
-    <string name="thanks_close">Close</string>
+    <string name="help_description">Enter values in exactly two fields.\nThen press calculate.\n\nThe remaining fields will be calculated and filled in!\n\nTip: When keyboard is shown, the screen will scroll, so you can move the screen to show all fields.</string>
 
 </resources>
