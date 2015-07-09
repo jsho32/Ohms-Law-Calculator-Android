@@ -114,6 +114,7 @@ public class MainActivity extends Activity {
         Button help = (Button) findViewById(R.id.help);
         Button developer = (Button) findViewById(R.id.developer);
         Button share = (Button) findViewById(R.id.share);
+        Button about = (Button) findViewById(R.id.about);
 
         calculate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -162,6 +163,16 @@ public class MainActivity extends Activity {
                 sAux = sAux + "https://play.google.com/store/apps/details?id=com.shoresdevelopment.ohmslawcalculator.app \n\n";
                 intent.putExtra(Intent.EXTRA_TEXT, sAux);
                 startActivity(Intent.createChooser(intent, "Choose Sharing Medium"));
+            }
+        });
+
+        about.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.setTitle(getResources().getText(R.string.about));
+                TextView description = (TextView) dialog.findViewById(R.id.alert_description);
+                description.setText(getResources().getText(R.string.about_description));
+                dialog.show();
             }
         });
     }
