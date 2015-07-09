@@ -22,8 +22,8 @@ android {
         applicationId "com.shoresdevelopment.ohmslawcalculator.app"
         minSdkVersion 9
         targetSdkVersion 22
-        versionCode 6
-        versionName "1.2.2"
+        versionCode 7
+        versionName "1.2.3"
     }
     buildTypes {
         release {
