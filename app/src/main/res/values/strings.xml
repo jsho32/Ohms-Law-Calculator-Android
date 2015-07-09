@@ -19,5 +19,9 @@
     <string name="alert_description">Please enter values in exactly two fields.</string>
     <string name="help_title">How to</string>
     <string name="help_description">Enter values in exactly two fields.\nThen press calculate.\n\nThe remaining fields will be calculated and filled in!\n\nTip: When keyboard is shown, the screen will scroll, so you can move the screen to show all fields.</string>
+    <string name="about">About Ohm\'s Law</string>
+    <string name="about_description">Ohm\'s law states that the current through a conductor between two points is directly proportional to the potential difference across the two points. Introducing the constant of proportionality, the resistance, one arrives at the usual mathematical equation that describes this relationship:\n
+\nI = V / R\n
+\nwhere I is the current through the conductor in units of amperes, V is the potential difference measured across the conductor in units of volts, and R is the resistance of the conductor in units of ohms. More specifically, Ohm\'s law states that the R in this relation is constant, independent of the current</string>
 
 </resources>
